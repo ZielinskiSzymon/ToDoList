@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:to_do_list/screens/main_screen.dart';
 import 'package:to_do_list/widgets/AppButton.dart';
 import 'package:to_do_list/widgets/form_field.dart';
 import 'package:to_do_list/screens/register_screen/register_screen.dart';
@@ -15,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  final bool isLoading = false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -77,9 +79,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () => {
-                    Navigator.push(
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const RegisterScreen())
+                      MaterialPageRoute(builder: (context) => const MainScreen()),
+                          (Route<dynamic> route) => false,
                     ),
                   },
                   child: Text("Nie masz konta? Zarejestruj się!"),
@@ -91,6 +94,42 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ),
   );
+
+  Future<void> loginUser() async {
+    try{
+      setState(() {
+        isLoading = true;
+      });
+      final supabaseInstance = Supabase.instance.client;
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      await supabaseInstance.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Zalogowano pomyślnie!")),
+      );
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+          (Route<dynamic> route) => false,
+      );
+      setState(() {
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error during login: $error")),
+      );
+    }
+  }
 
   String? emailValidator(String? value) {
     if (value == null || value.isEmpty) {

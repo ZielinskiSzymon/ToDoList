@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:to_do_list/screens/login_screen/login_screen.dart';
+import 'package:to_do_list/screens/main_screen.dart';
 import '../../widgets/AppButton.dart';
 import '../../widgets/form_field.dart';
 
@@ -17,7 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordRepeatController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  final bool isLoading = false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -106,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 20),
                   AppButton(title: "Zarejestruj się",onPressed:() {
                     if(_formKey.currentState!.validate()) {
-                      print("Rejestracja działa");
+                      registerUser();
                     }
                   },isLoading: isLoading),
                   const SizedBox(height: 20),
@@ -126,6 +128,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     ),
   );
+
+  Future<void> registerUser() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final supabaseInstance = Supabase.instance.client;
+      final String name = _nameController.text.trim();
+      final String email = _emailController.text.trim();
+      final String password = _passwordController.text.trim();
+
+      final AuthResponse response = await supabaseInstance.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'username': name,
+        },
+      );
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+            (Route<dynamic> route) => false,
+      );
+    } catch (err) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Błąd rejestracji: $err")),
+      );
+    }
+  }
 
   String? emailValidator(String? value, String hintText) {
     if (value == null || value.isEmpty) {

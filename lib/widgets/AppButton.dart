@@ -1,4 +1,3 @@
-// AppButton.dart (Zmiana)
 import 'package:flutter/material.dart';
 
 class AppButton extends StatelessWidget {
@@ -18,7 +17,7 @@ class AppButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_borderRadius)),
       ),
       onPressed: onPressed,
-      child: isLoading ? CircularProgressIndicator(color: Colors.white, padding: EdgeInsets.all(6)) : Text(
+      child: isLoading ? CircularProgressIndicator(color: Colors.white, padding: EdgeInsets.symmetric(vertical: 5)) : Text(
           title,
           style: TextStyle(
               color: Colors.white,

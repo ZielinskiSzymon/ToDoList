@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:to_do_list/screens/login_screen/login_screen.dart';
-import 'package:to_do_list/screens/main_screen.dart';
+import 'package:to_do_list/screens/main_screen/main_screen.dart';
 import '../../widgets/AppButton.dart';
 import '../../widgets/form_field.dart';
 
@@ -140,7 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final String email = _emailController.text.trim();
       final String password = _passwordController.text.trim();
 
-      final AuthResponse response = await supabaseInstance.auth.signUp(
+      await supabaseInstance.auth.signUp(
         email: email,
         password: password,
         data: {

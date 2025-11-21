@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:to_do_list/screens/main_screen.dart';
-import 'package:to_do_list/screens/register_screen/register_screen.dart';
+import 'package:to_do_list/screens/login_screen/login_screen.dart';
+import 'package:to_do_list/screens/main_screen/main_screen.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
       title: 'To-Do List',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       home: Supabase.instance.client.auth.currentUser == null
-          ? const MainScreen()
-          : const RegisterScreen()
+          ? const LoginScreen()
+          : const MainScreen()
     );
   }
 }

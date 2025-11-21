@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:to_do_list/screens/main_screen.dart';
+import 'package:to_do_list/screens/main_screen/main_screen.dart';
 import 'package:to_do_list/widgets/AppButton.dart';
 import 'package:to_do_list/widgets/form_field.dart';
 import 'package:to_do_list/screens/register_screen/register_screen.dart';
@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
                 AppButton(title: "Zaloguj się",onPressed:() {
                   if(_formKey.currentState!.validate()) {
-                    print("Logowanie działa");
+                    loginUser();
                   }
                 },isLoading: isLoading),
                 const SizedBox(height: 20),
@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onTap: () => {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const MainScreen()),
+                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
                           (Route<dynamic> route) => false,
                     ),
                   },
@@ -135,7 +135,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (value == null || value.isEmpty) {
       return "To pole nie może być puste!";
     }
-    // Bardziej rygorystyczny regex dla maila
     final emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
     if (!emailRegex.hasMatch(value)) {
       return "Podaj prawidłowy format maila.";

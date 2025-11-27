@@ -38,12 +38,30 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
   );
 
   Future<void> fetchTasks() async {
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      setState(() {
+        tasksArray = [];
+        isLoading = false;
+        isError = false;
+      });
+      return;
+    }
+
     try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase.from("to_do_lists").select() as List;
+      final response = await supabase
+          .from("to_do_lists")
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+      as List;
+
       final responseData = response
-          .map((task) => ToDoListEntity.fromJson(task))
+          .map((list) => ToDoListEntity.fromJson(list))
           .toList();
+
       setState(() {
         tasksArray = responseData;
         isLoading = false;

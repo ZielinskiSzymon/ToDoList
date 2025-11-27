@@ -6,11 +6,12 @@ import '../entities/task.dart';
 class TaskSettingsDialog extends StatefulWidget {
   final String title;
   final int? listId;
+  final void Function(void) fetchSubtask;
 
   const TaskSettingsDialog({
     super.key,
     required this.title,
-    required this.listId,
+    required this.listId, required this.fetchSubtask,
   });
 
   @override
@@ -56,12 +57,12 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
                     itemCount: tasks!.length,
                     itemBuilder: (context, index) {
                       final task = tasks![index];
-                      // Używamy ValueKey, aby zapewnić, że Flutter poprawnie śledzi widget
                       return TaskListItem(
                         key: ValueKey(task.taskId),
                         task: task,
                         onUpdateTitle: updateTaskTitle,
                         onDelete: deleteTask,
+                        fetchSubtask: () => widget.fetchSubtask(null),
                       );
                     },
                   ),
@@ -92,10 +93,8 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
     );
   }
 
-  // --- Funkcje Supabase ---
 
   Future<void> fetchTask() async {
-    // Zabezpieczenie przed listId = null
     if (widget.listId == null) {
       setState(() {
         tasks = [];
@@ -166,7 +165,6 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
           .update({'title': newTitle.trim()})
           .eq('task_id', taskId);
 
-      // Aktualizacja stanu lokalnego bez ponownego pobierania wszystkich danych
       setState(() {
         final index = tasks!.indexWhere((t) => t.taskId == taskId);
         if (index != -1) {
@@ -193,7 +191,6 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
           .delete()
           .eq('task_id', taskId);
 
-      // Usuń lokalnie i odśwież UI
       setState(() {
         tasks!.removeWhere((t) => t.taskId == taskId);
       });
@@ -205,19 +202,18 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
     }
   }
 }
-
-// --- Wyodrębniony Widget dla pojedynczego elementu listy ---
-
 class TaskListItem extends StatefulWidget {
   final Task task;
   final Function(int taskId, String newTitle) onUpdateTitle;
   final Function(int taskId) onDelete;
+  final VoidCallback fetchSubtask;
 
   const TaskListItem({
     super.key,
     required this.task,
     required this.onUpdateTitle,
     required this.onDelete,
+    required this.fetchSubtask,
   });
 
   @override
@@ -226,7 +222,6 @@ class TaskListItem extends StatefulWidget {
 
 class _TaskListItemState extends State<TaskListItem> {
   late TextEditingController _itemController;
-  // Flaga do kontrolowania wizualnego stanu edycji i przycisku zapisu
   bool _isEditing = false;
 
   @override
@@ -242,15 +237,15 @@ class _TaskListItemState extends State<TaskListItem> {
   }
 
   void _handleSave() {
-    // Sprawdzenie, czy faktycznie coś się zmieniło
     if (_itemController.text.trim() != widget.task.title) {
-      // Wywołaj funkcję zapisu do Supabase
       widget.onUpdateTitle(widget.task.taskId!, _itemController.text);
     }
 
-    // Wyłącz tryb edycji po zapisie
+
     setState(() {
       _isEditing = false;
+      widget.fetchSubtask();
+
     });
   }
 
@@ -261,28 +256,23 @@ class _TaskListItemState extends State<TaskListItem> {
       title: TextFormField(
         controller: _itemController,
         decoration: InputDecoration(
-          // Wyświetla ramkę edycji tylko w trybie edycji, poza tym wygląda jak zwykły tekst
           border: _isEditing ? const UnderlineInputBorder() : InputBorder.none,
         ),
         onTap: () {
-          // Włącz tryb edycji po kliknięciu
           setState(() {
             _isEditing = true;
           });
         },
-        // Zapisz po naciśnięciu "Done/Enter" na klawiaturze
         onFieldSubmitted: (_) => _handleSave(),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Przycisk ZAPISZ - widoczny tylko podczas edycji
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.save_outlined, color: Colors.blue),
               onPressed: _handleSave,
             ),
-          // Przycisk USUŃ (kosz)
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () {

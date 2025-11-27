@@ -204,11 +204,12 @@ class _TaskWidgetState extends State<TaskWidget> {
                       return TaskSettingsDialog(
                         title: widget.title,
                         listId: widget.listId,
+                        fetchSubtask: (_) => fetchSubtasks(),
                       );
                     },
                   ),
                   icon: const Icon(Icons.settings),
-                ),
+                )
               ],
             ),
 

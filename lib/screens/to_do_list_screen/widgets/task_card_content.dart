@@ -4,14 +4,14 @@ class TaskCardContent extends StatelessWidget {
   final String title;
   final String? description;
   final String deadline;
-  final bool isCompleted; // Dodana właściwość
+  final bool isCompleted;
 
   const TaskCardContent({
     super.key,
     required this.title,
     this.description,
     required this.deadline,
-    this.isCompleted = false, // Domyślnie false
+    this.isCompleted = false,
   });
 
   @override
@@ -27,7 +27,6 @@ class TaskCardContent extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 20,
-                  // Przekreślenie tytułu
                   decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
                   color: isCompleted ? Colors.grey : null,
                 ),
@@ -38,7 +37,6 @@ class TaskCardContent extends StatelessWidget {
                   description!,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[700],
-                    // Przekreślenie opisu
                     decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
                   ),
                   maxLines: 3,

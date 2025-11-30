@@ -39,7 +39,7 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.only(top: 16, left: 16, bottom: 18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -47,11 +47,10 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
                 widget.title,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 16),
 
               if (tasks != null && tasks!.isNotEmpty)
                 ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 200),
+                  constraints: const BoxConstraints(maxHeight: 400),
                   child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: tasks!.length,
@@ -144,6 +143,8 @@ class _TaskSettingsDialogState extends State<TaskSettingsDialog> {
       _titleController.clear();
 
       await fetchTask();
+
+      widget.fetchSubtask(null);
 
     } catch (error) {
       print('Error adding task: $error');

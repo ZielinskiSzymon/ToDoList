@@ -31,6 +31,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
           isLoading: isLoading,
           isError: isError,
           tasksArray: tasksArray,
+          onRefresh: fetchTasks(),
           fetchTasks: fetchTasks,
         ),
       ),
@@ -81,7 +82,7 @@ class TaskContent extends StatelessWidget {
     required this.isLoading,
     required this.isError,
     this.tasksArray,
-    required this.fetchTasks,
+    required this.fetchTasks, required Future<void> onRefresh,
   });
 
   final bool isLoading;

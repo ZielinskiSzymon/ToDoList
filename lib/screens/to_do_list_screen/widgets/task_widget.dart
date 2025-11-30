@@ -13,6 +13,7 @@ class TaskWidget extends StatefulWidget {
     required this.isCompited,
     required this.isArchived,
     this.listId,
+    this.onRefresh, // Dodano pole onRefresh
   });
 
   final String title;
@@ -21,6 +22,7 @@ class TaskWidget extends StatefulWidget {
   final bool isCompited;
   final bool isArchived;
   final int? listId;
+  final VoidCallback? onRefresh; // Dodano typ VoidCallback
 
   @override
   State<TaskWidget> createState() => _TaskWidgetState();
@@ -28,6 +30,7 @@ class TaskWidget extends StatefulWidget {
 
 class _TaskWidgetState extends State<TaskWidget> {
   late bool _isMainListCompleted;
+  late bool _isMainListArchived;
   List<Task>? subtasks;
   bool isSubtasksLoading = true;
 
@@ -35,6 +38,7 @@ class _TaskWidgetState extends State<TaskWidget> {
   void initState() {
     super.initState();
     _isMainListCompleted = widget.isCompited;
+    _isMainListArchived = widget.isArchived;
     fetchSubtasks();
   }
 
@@ -44,21 +48,26 @@ class _TaskWidgetState extends State<TaskWidget> {
     if (oldWidget.isCompited != widget.isCompited) {
       _isMainListCompleted = widget.isCompited;
     }
+    if (oldWidget.isArchived != widget.isArchived) {
+      _isMainListArchived = widget.isArchived;
+    }
   }
 
-  Future<void> updateMainListCompletion(bool isCompleted) async {
+  Future<void> updateMainListCompletion(bool isCompleted, bool isArchived) async {
     if (widget.listId == null) return;
 
     try {
       final supabase = Supabase.instance.client;
 
+      // Zmieniono 'isArchived' na 'is_archived'
       await supabase
           .from('to_do_lists')
-          .update({'is_completed': isCompleted})
+          .update({'is_completed': isCompleted, 'is_archived': isArchived})
           .eq('list_id', widget.listId!);
 
       setState(() {
         _isMainListCompleted = isCompleted;
+        _isMainListArchived = isArchived;
       });
 
     } catch (e) {
@@ -106,7 +115,7 @@ class _TaskWidgetState extends State<TaskWidget> {
       final supabase = Supabase.instance.client;
       await supabase
           .from('tasks')
-          .update({'is_completed': isCompleted})
+          .update({'is_completed': isCompleted} )
           .eq('task_id', task.taskId!);
 
       setState(() {
@@ -121,10 +130,16 @@ class _TaskWidgetState extends State<TaskWidget> {
         }
 
         final allCompleted = subtasks!.every((t) => t.isCompleted);
+
+        final newIsArchivedState = allCompleted;
+
         if (allCompleted && !_isMainListCompleted) {
-          updateMainListCompletion(true);
+          updateMainListCompletion(true, newIsArchivedState);
+          if (widget.onRefresh != null) {
+            widget.onRefresh!();
+          }
         } else if (!allCompleted && _isMainListCompleted) {
-          updateMainListCompletion(false);
+          updateMainListCompletion(false, _isMainListArchived);
         }
       });
     } catch (e) {
@@ -226,8 +241,15 @@ class _TaskWidgetState extends State<TaskWidget> {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    updateMainListCompletion(!_isMainListCompleted);
+                  onPressed: () async {
+                    final newIsCompleted = !_isMainListCompleted;
+                    final newIsArchived = newIsCompleted;
+
+                    await updateMainListCompletion(newIsCompleted, newIsArchived);
+
+                    if (widget.onRefresh != null) {
+                      widget.onRefresh!();
+                    }
                   },
                   icon: Icon(
                     _isMainListCompleted ? Icons.undo : Icons.check,

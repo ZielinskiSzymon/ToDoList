@@ -226,6 +226,7 @@ class _ToDoListAppbarState extends State<ToDoListAppbar> {
       final response = await supabase
           .from('to_do_lists')
           .insert(listJson)
+          .eq("is_completed", "true")
           .select();
 
       widget.onListCreated();
